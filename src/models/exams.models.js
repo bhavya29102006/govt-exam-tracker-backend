@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const examschema = new mongoose.Schema({
     examname : {
         type:String,
-        required:true,
+        required:true, 
 
     },
     origanization : {
@@ -38,6 +38,6 @@ const examschema = new mongoose.Schema({
     default: "Upcoming"
 }
 
-},{imestamps: true})
+},{timestamps: true})
 
 export const Exam= mongoose.model("Exam",examschema)

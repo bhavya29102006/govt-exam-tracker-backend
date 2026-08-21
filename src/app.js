@@ -19,7 +19,11 @@ app.use(cookieParser())
 
 // routes import
 import userRouter from './routes/user.routes.js'
+import examRouter from './routes/exam.routes.js'
+import trackedExamsRouter from './routes/trackedexams.routes.js'
 
 app.use("/api/v1/users",userRouter)
+app.use("/api/v1/exams",examRouter)
+app.use("/api/v1/tracked-exams",trackedExamsRouter)
 
 export {app}

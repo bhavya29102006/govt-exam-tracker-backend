@@ -11,7 +11,7 @@ dotenv.config({
 connectDB()
 .then(() => {
     app.on("error" , (error) => {
-        consloe.log("ERRR: ", error);
+        console.log("ERRR: ", error);
         throw error 
     })
 

@@ -17,8 +17,18 @@ const userSchema = new mongoose.Schema({
         unique:true,
         lowercase:true,   
     },
+        fullname : {
+        type:String,
+        required:true,
+        trim:true,
+        index:true,
+    },
     password : {
         type:String,
+        required:true,
+    },
+    avatar : {
+        type:String, // url from cloudinary
         required:true,
     },
     coverImage : {
@@ -26,7 +36,12 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken : {
         type:String
-    }
+    },
+    role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user"
+}
     
     
     

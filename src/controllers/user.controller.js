@@ -31,11 +31,11 @@ const generateAccessAndRefreshTokens = async(userId)  =>
 
 const registerUser = asyncHandler(async (req, res) => {
     
-   const {username , email , password} = req.body
+   const {username , email , password , fullname} = req.body
    console.log("email:" , email);
 
    if(
-    [username , email , password].some((field) => field?.trim() === "")
+    [username , email , password , fullname].some((field) => field?.trim() === "" || field === undefined)
    ){
     throw new ApiError(400 , "all fields are required ")
    }
@@ -46,10 +46,25 @@ const registerUser = asyncHandler(async (req, res) => {
    if(existedUser){
     throw new ApiError(409, "user with email or username already exists")
    }
+
+   const avatarLocalPath = req.files?.avatar?.[0]?.path
+
+   if(!avatarLocalPath){
+    throw new ApiError(400, "avatar file is required")
+   }
+
+   const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+   if(!avatar){
+    throw new ApiError(500, "something went wrong while uploading avatar")
+   }
+
    const user = await User.create({
      username : username.toLowerCase(),
      email,
-     password
+     password,
+     fullname,
+     avatar: avatar.url
    })
 
    const createdUser = await User.findById(user._id).select("-password -refreshToken")
@@ -162,7 +177,7 @@ const logoutUser = asyncHandler(async(req,res) => {
       secure: true
     }
 
-    const {accessToken , refreshToken} = await generateAccessAndRefreshTokens(user._id)
+    const {accessToken , refreshToken,newrefreshToken} = await generateAccessAndRefreshTokens(user._id)
 
     return res
     .status(200)
@@ -171,7 +186,7 @@ const logoutUser = asyncHandler(async(req,res) => {
     .json (
        new ApiResponse(
         200,
-        {accessToken , refreshToken: new refreshToken},
+        {accessToken , refreshToken: newrefreshToken},
         "access token refreshed"
        )
     )
@@ -190,9 +205,9 @@ const logoutUser = asyncHandler(async(req,res) => {
 
     const user = await User.findById(req.user?._id)
 
-    const isPasswordCorrect = isPasswordCorrect(oldPassword)
+    const isPasswordvalid = isPasswordCorrect(oldPassword)
 
-    if(!isPasswordCorrect){
+    if(!isPasswordvalid){
       throw new ApiError(400 , "invalid old password")
     }
 
@@ -228,7 +243,7 @@ const logoutUser = asyncHandler(async(req,res) => {
         }
       },
       {new : true}
-    ).select("_password")
+    ).select("-password")
 
     return res
     .status(200)
@@ -255,7 +270,7 @@ const logoutUser = asyncHandler(async(req,res) => {
         }
       },
       {new : true}
-    ).select("_password")
+    ).select("-password")
 
     return res
     .status(200)
