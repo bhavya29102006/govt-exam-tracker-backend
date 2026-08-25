@@ -1,6 +1,7 @@
 import dotenv  from "dotenv";
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
+import { startDeadlineReminderJob } from "./jobs/deadlinereminder.job.js";
 
 
 
@@ -17,6 +18,7 @@ connectDB()
 
     app.listen(process.env.PORT, () => {
         console.log(`app is listening on port ${process.env.PORT}`);
+        startDeadlineReminderJob();
     })
 
 })

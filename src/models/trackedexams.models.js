@@ -17,6 +17,14 @@ status: {
    enum: ["Interested", "Applied", "Exam Done", "Result Out"],
    default: "Interested"
 },
+reminderSent: {
+    type: Boolean,
+    default: false
+},
+reminderSent: {
+    type: Boolean,
+    default: false
+},
 
 
 

@@ -60,19 +60,35 @@ const untrackExam = asyncHandler(async (req, res) => {
 });
 
 // GET /my-tracked-exams
+// GET /my-tracked-exams
 const getMyTrackedExams = asyncHandler(async (req, res) => {
-    const { status } = req.query;
+    const { status, page = 1, limit = 10 } = req.query;
 
     const filter = { user: req.user._id };
     if (status) filter.status = status;
 
     const trackedExams = await TrackedExams.find(filter)
         .populate("exam")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .skip((Number(page) - 1) * Number(limit))
+        .limit(Number(limit));
+
+    const totalTrackedExams = await TrackedExams.countDocuments(filter);
 
     return res
     .status(200)
-    .json(new ApiResponse(200, trackedExams, "tracked exams fetched successfully"));
+    .json(
+        new ApiResponse(
+            200,
+            {
+                trackedExams,
+                totalTrackedExams,
+                currentPage: Number(page),
+                totalPages: Math.ceil(totalTrackedExams / Number(limit))
+            },
+            "tracked exams fetched successfully"
+        )
+    );
 });
 
 // PATCH /track/:examId/status

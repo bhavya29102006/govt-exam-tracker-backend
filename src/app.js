@@ -26,4 +26,7 @@ app.use("/api/v1/users",userRouter)
 app.use("/api/v1/exams",examRouter)
 app.use("/api/v1/tracked-exams",trackedExamsRouter)
 
+import { errorHandler } from "./middlewares/errorhandler.middleware.js"
+app.use(errorHandler)
+
 export {app}
