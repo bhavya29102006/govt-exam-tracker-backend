@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import { application } from "express";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Exam } from "../models/exams.models.js";
+import { TrackedExams } from "../models/trackedexams.models.js";
 
 // POST /exam-create
 const createExam = asyncHandler(async (req, res) => {
@@ -197,11 +198,90 @@ const searchExams = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, exams, `found ${exams.length} exam(s) matching "${query}"`));
 });
 
+// GET /exam-stats (admin only)
+const getExamStats = asyncHandler(async (req, res) => {
+    const totalExams = await Exam.countDocuments();
+
+    const examsByCategory = await Exam.aggregate([
+        {
+            $group: {
+                _id: "$category",
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { count: -1 }
+        }
+    ]);
+
+    const examsByStatus = await Exam.aggregate([
+        {
+            $group: {
+                _id: "$status",
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    const mostTrackedExams = await TrackedExams.aggregate([
+        {
+            $group: {
+                _id: "$exam",
+                trackCount: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { trackCount: -1 }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "exams",
+                localField: "_id",
+                foreignField: "_id",
+                as: "examDetails"
+            }
+        },
+        {
+            $unwind: "$examDetails"
+        },
+        {
+            $project: {
+                _id: 0,
+                examId: "$_id",
+                examname: "$examDetails.examname",
+                trackCount: 1
+            }
+        }
+    ]);
+
+    const totalTrackedRecords = await TrackedExams.countDocuments();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                totalExams,
+                totalTrackedRecords,
+                examsByCategory,
+                examsByStatus,
+                mostTrackedExams
+            },
+            "exam statistics fetched successfully"
+        )
+    );
+});
+
 export {
     createExam,
     getAllExams,
     getExamById,
     updateExam,
     deleteExam,
-    searchExams
+    searchExams,
+    getExamStats
 };

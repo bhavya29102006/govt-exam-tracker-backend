@@ -23,5 +23,6 @@ router.route("/searchexam").get(verifyJWT, searchExams);
 router.route("/exam-create").post(verifyJWT, isAdmin, validate(createExamSchema), createExam);
 router.route("/updateexam/:examId").patch(verifyJWT, isAdmin,validate(updateExamSchema), updateExam);
 router.route("/deleteexam/:examId").post(verifyJWT, isAdmin, deleteExam);
+router.route("/exam-stats").get(verifyJWT, isAdmin, getExamStats);
 
 export default router;
